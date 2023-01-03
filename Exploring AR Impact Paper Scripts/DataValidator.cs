@@ -50,6 +50,11 @@ namespace Exploring_AR_Impact_Paper_Scripts
         };
 
         /// <summary>
+        /// The number of trials in each modality for one team.
+        /// </summary>
+        private static readonly int NumberOfTrials = 12;
+
+        /// <summary>
         /// The format regex for time stamps.
         /// </summary>
         private static readonly string TimeStampFormat = @"[0-9]?[0-9]:[0-5][0-9]";
@@ -242,10 +247,54 @@ namespace Exploring_AR_Impact_Paper_Scripts
         /// <param name="data">The utterances count data in a 2D string array indexed by row then column.</param>
         /// <param name="issues">A list of issues found in the current data.</param>
         /// <returns>Whether the data is valid. The issues list is empty if true.</returns>
-        /// <exception cref="NotImplementedException"></exception>
         internal static bool ValidateUtterancesCountData(string[][] data, out List<string> issues)
         {
-            throw new NotImplementedException();
+            // Initialize the issues list.
+            issues = new List<string>();
+
+            // For each line in the data...
+            for (int lineNumber = 0; lineNumber < data.Length; lineNumber++)
+            {
+                // Get a reference to the current line.
+                string[] line = data[lineNumber];
+
+                // Set the issue header.
+                string issueHeader = "Utterances Count line " + lineNumber + " - ";
+
+                // Ensure the line has the correct number of columns.
+                if (DataValidator.ValidateLineLength(line, DataValidator.UtterancesCountTableColumCount, ref issues, issueHeader) == false)
+                {
+                    // Move onto the next line, as no additional validation is possible for the current line.
+                    continue;
+                }
+
+                // Ensure the team number is a valid value.
+                DataValidator.ValidateTeamNumber(line[0], ref issues, issueHeader);
+
+                // Ensure the video name is one of the accepted values.
+                DataValidator.ValidateVideoName(line[1], ref issues, issueHeader);
+
+                // Ensure the trial number is one of the accepted values.
+                DataValidator.ValidateIntegerInRange(line[2], 1, DataValidator.NumberOfTrials, "Trial number", ref issues, issueHeader);
+
+                // Ensure the p1 speaking to self is one of the accepted values.
+                DataValidator.ValidateInteger(line[3], "P1 speaking to self", ref issues, issueHeader);
+
+                // Ensure the p2 speaking to self is one of the accepted values.
+                DataValidator.ValidateInteger(line[4], "P2 speaking to self", ref issues, issueHeader);
+
+                // Ensure the p1 speaking to p2 is one of the accepted values.
+                DataValidator.ValidateInteger(line[5], "P1 speaking to P2", ref issues, issueHeader);
+
+                // Ensure the p2 speaking to p1 is one of the accepted values.
+                DataValidator.ValidateInteger(line[6], "P2 speaking to P1", ref issues, issueHeader);
+
+                // Ensure the either speaking to instructor is one of the accepted values.
+                DataValidator.ValidateInteger(line[7], "Either speaking to instructor", ref issues, issueHeader);
+            }
+
+            // Return whether there are any issues.
+            return issues.Count == 0;
         }
         #endregion
 
