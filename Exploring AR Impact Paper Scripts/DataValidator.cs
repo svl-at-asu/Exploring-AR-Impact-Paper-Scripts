@@ -102,8 +102,8 @@ namespace Exploring_AR_Impact_Paper_Scripts
             // Initialize the issues list.
             issues = new List<string>();
 
-            // For each line in the data...
-            for (int lineNumber = 0; lineNumber < data.Length; lineNumber++)
+            // For each line in the data (skipping first header line)...
+            for (int lineNumber = 1; lineNumber < data.Length; lineNumber++)
             {
                 // Get a reference to the current line.
                 string[] line = data[lineNumber];
@@ -155,8 +155,8 @@ namespace Exploring_AR_Impact_Paper_Scripts
             // Initialize the issues list.
             issues = new List<string>();
 
-            // For each line in the data...
-            for (int lineNumber = 0; lineNumber < data.Length; lineNumber++)
+            // For each line in the data (skipping first header line)...
+            for (int lineNumber = 1; lineNumber < data.Length; lineNumber++)
             {
                 // Get a reference to the current line.
                 string[] line = data[lineNumber];
@@ -199,8 +199,8 @@ namespace Exploring_AR_Impact_Paper_Scripts
             // Initialize the issues list.
             issues = new List<string>();
 
-            // For each line in the data...
-            for (int lineNumber = 0; lineNumber < data.Length; lineNumber++)
+            // For each line in the data (skipping first header line)...
+            for (int lineNumber = 1; lineNumber < data.Length; lineNumber++)
             {
                 // Get a reference to the current line.
                 string[] line = data[lineNumber];
@@ -252,8 +252,8 @@ namespace Exploring_AR_Impact_Paper_Scripts
             // Initialize the issues list.
             issues = new List<string>();
 
-            // For each line in the data...
-            for (int lineNumber = 0; lineNumber < data.Length; lineNumber++)
+            // For each line in the data (skipping first header line)...
+            for (int lineNumber = 1; lineNumber < data.Length; lineNumber++)
             {
                 // Get a reference to the current line.
                 string[] line = data[lineNumber];
