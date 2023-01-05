@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Exploring_AR_Impact_Paper_Scripts
+namespace DataValidationScripts
 {
     /// <summary>
     /// Reads the input data. See README file for expected input formats.

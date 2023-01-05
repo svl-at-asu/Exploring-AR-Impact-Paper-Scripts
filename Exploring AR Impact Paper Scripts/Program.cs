@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Exploring_AR_Impact_Paper_Scripts
+namespace DataValidationScripts
 {
     internal class Program
     {
