@@ -18,9 +18,25 @@ namespace DataValidationScripts
             Looks = 1,
             Utterances = 2,
             UtterancesCount = 3,
-            Output = 4
+            OutputFolder = 4
         }
 
+        /// <summary>
+        /// The file name for the output validation log.
+        /// </summary>
+        private static readonly string OutputLogFileName = "ValidationLog.txt";
+
+        /// <summary>
+        /// The file name for the output transformed table.
+        /// </summary>
+        private static readonly string OutputTransformedTableFileName = "FullEventTable.csv";
+
+        /// <summary>
+        /// The delegate handler for the table validation function.
+        /// </summary>
+        /// <param name="data">The gesture data in a 2D string array indexed by row then column.</param>
+        /// <param name="issues">A list of issues found in the current data.</param>
+        /// <returns></returns>
         private delegate bool ValidateTableHandler(string[][] data, out List<string> issues);
 
         /// <summary>
@@ -59,7 +75,7 @@ namespace DataValidationScripts
             issues["Utterances Count"] = utterancesCountIssues;
 
             // Generate the issues log.
-            Program.GenerateOutputLog(args[(int)Program.ArgsIndices.Output], issues);
+            Program.GenerateOutputLog(args[(int)Program.ArgsIndices.OutputFolder], issues);
         }
 
         /// <summary>
@@ -98,8 +114,16 @@ namespace DataValidationScripts
         /// <param name="allIssues">A set of issue lists for each data table.</param>
         private static void GenerateOutputLog(string outputFilePath, Dictionary<string, List<string>> allIssues)
         {
+            // Create the full file path for the output log.
+            // Ensure the path ends in a slash before appending the file name.
+            if (outputFilePath[outputFilePath.Length - 1] != '\\')
+            {
+                outputFilePath += "\\";
+            }
+            string outputLogFullPath = outputFilePath + Program.OutputLogFileName;
+
             // Create the file.
-            using (FileStream stream = File.Create(outputFilePath))
+            using (FileStream stream = File.Create(outputLogFullPath))
             {
                 using (StreamWriter writer = new StreamWriter(stream))
                 {
