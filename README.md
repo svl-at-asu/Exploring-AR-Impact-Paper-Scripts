@@ -18,5 +18,8 @@ The data reader has a "Read" method associated with each of the four raw data in
 ### Utterances Count Data
 `Team, Video, Trial, P1 Speaking to Self, P2 Speaking to Self, P1 Speaking to P2, P2 Speaking to P1, Either Person Speaking to Instructor`
 
+### Trial Recording Data
+`Team, Trial, Modality, Chart Type, Task Type, Task Number, Video, Start, End`
+
 ### Transformed Data Output Format
 `Team, Trial, Modality, Trial Time, Event Type, Participant, Action, Action Target, Action Intent, Utterance Purpose`
