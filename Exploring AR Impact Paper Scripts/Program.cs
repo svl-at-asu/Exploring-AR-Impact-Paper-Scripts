@@ -40,71 +40,58 @@ namespace DataValidationScripts
         private delegate bool ValidateTableHandler(string[][] data, out List<string> issues);
 
         /// <summary>
+        /// The names of each table this script processes.
+        /// </summary>
+        private static readonly string[] TableNames = { "Gestures", "Looks", "Utterances", "Utterances Count" };
+
+        /// <summary>
         /// Expects a list of file names for the input data in the following order: Gestures, Looks, Utterances, Utterances Counts, Output.
         /// </summary>
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            // Initialize the sets of issues.
-            Dictionary<string, List<string>> issues = new Dictionary<string, List<string>>()
+            // Initialize the table data and issue sets.
+            Dictionary<string, string[][]> tableData = new Dictionary<string, string[][]>();
+            Dictionary<string, List<string>> issues = new Dictionary<string, List<string>>();
+
+            Dictionary<string, ValidateTableHandler> validationHandlers = new Dictionary<string, ValidateTableHandler>()
             {
-                { "Gestures", new List<string>() },
-                { "Looks", new List<string>() },
-                { "Utterances", new List<string>() },
-                { "Utterances Count", new List<string>() }
+                { "Gestures", DataValidator.ValidateGesturesData },
+                { "Looks", DataValidator.ValidateLooksData },
+                { "Utterances", DataValidator.ValidateUtterancesData },
+                { "Utterances Count", DataValidator.ValidateUtterancesCountData }
             };
 
-            // Validate the Gestures table.
-            ValidateTableHandler validateGestures = DataValidator.ValidateGesturesData;
-            Program.ValidateTable(args[(int)Program.ArgsIndices.Gestures], "Gestures", validateGestures, out List<string> gesturesIssues);
-            issues["Gestures"] = gesturesIssues;
+            // Read and validate each table.
+            foreach (string tableName in Program.TableNames)
+            {
+                // Read the table file data.
+                try
+                {
+                    // Get the file path from the program args ising the ArgsIndices enum.
+                    Enum.TryParse(tableName.Replace(" ", ""), out Program.ArgsIndices argsIndex);
+                    tableData[tableName] = DataReader.ReadCsvData(args[(int)argsIndex]);
+                }
+                catch (Exception ex)
+                {
+                    // An error occured while trying to read the file data. Add an issue to the list.
+                    issues.Add(tableName, new List<string>()
+                    {
+                        tableName + " table error - " + ex.Message
+                    });
 
-            // Validate the Looks table.
-            ValidateTableHandler validateLooks = DataValidator.ValidateLooksData;
-            Program.ValidateTable(args[(int)Program.ArgsIndices.Looks], "Looks", validateLooks, out List<string> looksIssues);
-            issues["Looks"] = looksIssues;
+                    // Move on to the next table, as no data validation is possible.
+                    continue;
+                }
 
-            // Validate the Utterances table.
-            ValidateTableHandler validateUtterances = DataValidator.ValidateUtterancesData;
-            Program.ValidateTable(args[(int)Program.ArgsIndices.Utterances], "Utterances", validateUtterances, out List<string> utterancesIssues);
-            issues["Utterances"] = utterancesIssues;
+                // Validate the table.
+                validationHandlers[tableName](tableData[tableName], out List<string> tableIssues);
 
-            // Validate the Utterances Count table.
-            ValidateTableHandler validateUtterancesCount = DataValidator.ValidateUtterancesCountData;
-            Program.ValidateTable(args[(int)Program.ArgsIndices.UtterancesCount], "Utterances Count", validateUtterancesCount, out List<string> utterancesCountIssues);
-            issues["Utterances Count"] = utterancesCountIssues;
+                issues.Add(tableName, tableIssues);
+            }
 
             // Generate the issues log.
             Program.GenerateOutputLog(args[(int)Program.ArgsIndices.OutputFolder], issues);
-        }
-
-        /// <summary>
-        /// Validates the data in the table CSV.
-        /// </summary>
-        /// <param name="filePath">The file path to the table file.</param>
-        /// <param name="issues">A list of issues found in the current data.</param>
-        private static void ValidateTable(string filePath, string tableName, ValidateTableHandler validationMethod, out List<string> issues)
-        {
-            // Initialize the issues list.
-            issues = new List<string>();
-
-            // Read the table file data.
-            string[][] data = null;
-            try
-            {
-                data = DataReader.ReadCsvData(filePath);
-            }
-            catch (Exception ex)
-            {
-                // An error occured while trying to read the file data. Add an issue to the list.
-                issues.Add(tableName + " table error - " + ex.Message);
-
-                // Return, as no data validation is possible.
-                return;
-            }
-
-            // Validate the table file data.
-            validationMethod(data, out issues);
         }
 
         /// <summary>
