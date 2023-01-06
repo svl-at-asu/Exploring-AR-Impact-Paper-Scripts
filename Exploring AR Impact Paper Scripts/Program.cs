@@ -10,7 +10,7 @@ namespace DataValidationScripts
     internal class Program
     {
         /// <summary>
-        /// Args are expected in the following order: Gestures, Looks, Utterances, Utterances Counts, Output.
+        /// Args are expected in the following order: Gestures, Looks, Utterances, Utterances Counts, Trial Data, Output.
         /// </summary>
         private enum ArgsIndices
         {
@@ -18,7 +18,8 @@ namespace DataValidationScripts
             Looks = 1,
             Utterances = 2,
             UtterancesCount = 3,
-            OutputFolder = 4
+            TrialData = 4,
+            OutputFolder = 5
         }
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace DataValidationScripts
         private static readonly string[] TableNames = { "Gestures", "Looks", "Utterances", "Utterances Count" };
 
         /// <summary>
-        /// Expects a list of file names for the input data in the following order: Gestures, Looks, Utterances, Utterances Counts, Output.
+        /// Expects a list of file names for the input data in the following order: Gestures, Looks, Utterances, Utterances Counts, Trial Data, Output.
         /// </summary>
         /// <param name="args"></param>
         static void Main(string[] args)
@@ -90,8 +91,76 @@ namespace DataValidationScripts
                 issues.Add(tableName, tableIssues);
             }
 
+            // Read the trial table data file.
+            string[][] trialData = null;
+            try
+            {
+                trialData = DataReader.ReadCsvData(args[(int)Program.ArgsIndices.TrialData]);
+            }
+            catch(Exception ex)
+            {
+                // An error occured while trying to read the file data. Add an issue to the list.
+                issues.Add("Trial Data", new List<string>()
+                {
+                    "Trial Data table error - " + ex.Message
+                });
+            }
+
+            // Transform the data into the output event table, if it was successfully read.
+            if (trialData != null)
+            {
+                List<string[]> eventTableData = DataTransformer.TransformData(tableData, trialData, out List<string> transformIssues);
+                issues.Add("Trial Data", transformIssues);
+
+                // Output the transformed data table.
+                Program.GenerateEventTable(args[(int)Program.ArgsIndices.OutputFolder], eventTableData);
+            }
+
             // Generate the issues log.
             Program.GenerateOutputLog(args[(int)Program.ArgsIndices.OutputFolder], issues);
+        }
+
+        /// <summary>
+        /// Generates an event table as a CSV file at the given path.
+        /// </summary>
+        /// <param name="outputFilePath">The path to generate the table at.</param>
+        /// <param name="tableData">The table data to generate the table file from.</param>
+        private static void GenerateEventTable(string outputFilePath, List<string[]> tableData)
+        {
+            // Create the full file path for the output table.
+            // Ensure the path ends in a slash before appending the file name.
+            if (outputFilePath[outputFilePath.Length - 1] != '\\')
+            {
+                outputFilePath += "\\";
+            }
+            string outputTableFullPath = outputFilePath + Program.OutputTransformedTableFileName;
+
+            // Create the file.
+            using (FileStream stream = File.Create(outputTableFullPath))
+            {
+                using (StreamWriter writer = new StreamWriter(stream))
+                {
+                    // Write the table header.
+                    writer.WriteLine("Team, Trial, Modality, Trial Time, Event Type, Participant, Action, Action Target, Action Intent, Utterance Purpose");
+
+                    // Write the table lines.
+                    foreach (string[] lineData in tableData)
+                    {
+                        // Build a CSV file line, with values separated by commas.
+                        StringBuilder line = new StringBuilder();
+                        foreach (string value in lineData)
+                        {
+                            line.Append(value);
+                            line.Append(",");
+                        }
+
+                        // Remove the extra trailing comma, and then write the line to the file.
+                        string lineString = line.ToString();
+                        lineString = lineString.Remove(lineString.Length - 1);
+                        writer.WriteLine(lineString);
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -119,6 +188,7 @@ namespace DataValidationScripts
                     writer.WriteLine();
                     writer.WriteLine();
 
+                    int totalIssues = 0;
                     foreach (KeyValuePair<string, List<string>> item in allIssues)
                     {
                         // Write the header.
@@ -140,7 +210,13 @@ namespace DataValidationScripts
 
                         writer.WriteLine();
                         writer.WriteLine();
+
+                        totalIssues += item.Value.Count;
                     }
+
+                    writer.WriteLine("Total issues found: " + totalIssues);
+                    writer.WriteLine();
+                    writer.WriteLine();
 
                     // Write the end of the log.
                     writer.WriteLine("END OF LOG");
