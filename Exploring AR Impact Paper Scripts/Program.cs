@@ -141,7 +141,7 @@ namespace DataValidationScripts
                 using (StreamWriter writer = new StreamWriter(stream))
                 {
                     // Write the table header.
-                    writer.WriteLine("Team, Trial, Modality, Trial Time, Event Type, Participant, Action, Action Target, Action Intent, Utterance Purpose");
+                    writer.WriteLine("Team, Trial, Modality, Trial Time, Event Type, Participant, Action, Action Target, Action Intent, Utterance Purpose, Deictic Pronouns, Spatial Deictic");
 
                     // Write the table lines.
                     foreach (string[] lineData in tableData)

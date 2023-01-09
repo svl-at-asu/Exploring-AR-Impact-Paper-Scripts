@@ -163,7 +163,9 @@ namespace DataValidationScripts
                     "",                 // Action
                     "",                 // Action Target
                     "",                 // Action Intent
-                    utteranceLine[3]    // Utterance Purpose
+                    utteranceLine[3],   // Utterance Purpose
+                    utteranceLine[5],   // Deictic Pronouns
+                    utteranceLine[6]    // Spatial Deictic
                 };
 
                 // Add the transformed data line to the transformed data.
