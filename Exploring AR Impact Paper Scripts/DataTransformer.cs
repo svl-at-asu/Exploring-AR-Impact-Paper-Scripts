@@ -35,6 +35,9 @@ namespace DataValidationScripts
                 // Find the Trial.
                 string trialString = "";
                 string trialTimeString = "";
+                string chartType = "";
+                string taskType = "";
+                string taskNumber = "";
                 int trialIndex = DataTransformer.GetIndexOfTrialRecord(trialData, gestureLine[0], gestureLine[1], gestureLine[2]);
                 if (trialIndex == -1)
                 {
@@ -43,11 +46,16 @@ namespace DataValidationScripts
                 }
                 else
                 {
-                    trialString = trialIndex == -1 ? "" : trialData[trialIndex][1];
+                    trialString = trialData[trialIndex][1];
 
                     // Calculate the Trial Time.
                     TimeSpan trialTime = DataTransformer.GetTrialTime(gestureLine[2], trialData[trialIndex][7]);
                     trialTimeString = DataTransformer.GetTimeStampString(trialTime);
+
+                    // Get the chart and task data.
+                    chartType = trialData[trialIndex][3];
+                    taskType = trialData[trialIndex][4];
+                    taskNumber = trialData[trialIndex][5];
                 }
 
                 // Get the Modality.
@@ -61,6 +69,9 @@ namespace DataValidationScripts
                     gestureLine[0],     // Team
                     trialString,        // Trial
                     modality,           // Modality
+                    chartType,          // Chart Type
+                    taskType,           // Task Type
+                    taskNumber,         // Task Number
                     trialTimeString,    // Trial Time
                     "Gesture",          // Event Type
                     gestureLine[4],     // Participant
@@ -83,6 +94,9 @@ namespace DataValidationScripts
                 // Find the Trial.
                 string trialString = "";
                 string trialTimeString = "";
+                string chartType = "";
+                string taskType = "";
+                string taskNumber = "";
                 int trialIndex = DataTransformer.GetIndexOfTrialRecord(trialData, looksLine[0], looksLine[1], looksLine[2]);
                 if (trialIndex == -1)
                 {
@@ -91,11 +105,16 @@ namespace DataValidationScripts
                 }
                 else
                 {
-                    trialString = trialIndex == -1 ? "" : trialData[trialIndex][1];
+                    trialString = trialData[trialIndex][1];
 
                     // Calculate the Trial Time.
                     TimeSpan trialTime = DataTransformer.GetTrialTime(looksLine[2], trialData[trialIndex][7]);
                     trialTimeString = DataTransformer.GetTimeStampString(trialTime);
+
+                    // Get the chart and task data.
+                    chartType = trialData[trialIndex][3];
+                    taskType = trialData[trialIndex][4];
+                    taskNumber = trialData[trialIndex][5];
                 }
 
                 // Get the Modality.
@@ -109,6 +128,9 @@ namespace DataValidationScripts
                     looksLine[0],       // Team
                     trialString,        // Trial
                     modality,           // Modality
+                    chartType,          // Chart Type
+                    taskType,           // Task Type
+                    taskNumber,         // Task Number
                     trialTimeString,    // Trial Time
                     "Look",             // Event Type
                     looksLine[3],       // Participant
@@ -131,6 +153,9 @@ namespace DataValidationScripts
                 // Find the Trial.
                 string trialString = "";
                 string trialTimeString = "";
+                string chartType = "";
+                string taskType = "";
+                string taskNumber = "";
                 int trialIndex = DataTransformer.GetIndexOfTrialRecord(trialData, utteranceLine[0], utteranceLine[1], utteranceLine[2]);
                 if (trialIndex == -1)
                 {
@@ -139,11 +164,16 @@ namespace DataValidationScripts
                 }
                 else
                 {
-                    trialString = trialIndex == -1 ? "" : trialData[trialIndex][1];
+                    trialString = trialData[trialIndex][1];
 
                     // Calculate the Trial Time.
                     TimeSpan trialTime = DataTransformer.GetTrialTime(utteranceLine[2], trialData[trialIndex][7]);
                     trialTimeString = DataTransformer.GetTimeStampString(trialTime);
+
+                    // Get the chart and task data.
+                    chartType = trialData[trialIndex][3];
+                    taskType = trialData[trialIndex][4];
+                    taskNumber = trialData[trialIndex][5];
                 }
 
                 // Get the Modality.
@@ -157,6 +187,9 @@ namespace DataValidationScripts
                     utteranceLine[0],   // Team
                     trialString,        // Trial
                     modality,           // Modality
+                    chartType,          // Chart Type
+                    taskType,           // Task Type
+                    taskNumber,         // Task Number
                     trialTimeString,    // Trial Time
                     "Utterance",        // Event Type
                     utteranceLine[4],   // Participant
