@@ -69,7 +69,7 @@ namespace DataValidationScripts
                 // Read the table file data.
                 try
                 {
-                    // Get the file path from the program args ising the ArgsIndices enum.
+                    // Get the file path from the program args using the ArgsIndices enum.
                     Enum.TryParse(tableName.Replace(" ", ""), out Program.ArgsIndices argsIndex);
                     tableData[tableName] = DataReader.ReadCsvData(args[(int)argsIndex]);
                 }
