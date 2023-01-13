@@ -81,7 +81,7 @@ namespace TimeSeriesDataScripts
         /// <param name="yCol">The column in each participant data that contains the y value to use.</param>
         /// <param name="issues">A list of issues found in the current data.</param>
         /// <param name="issueHeader">The standard header to add to the beginning of each new issue appended to the issues list.</param>
-        /// <returns>A 2D string array indexed by row and then column, containing the participant 1 x, participant 1 y, participant 2 x, participant 2 y, participant 1 angle, and participant 2 angle in that order for each time step.</returns>
+        /// <returns>A 2D string array indexed by row and then column, containing the time stamp, participant 1 x, participant 1 y, participant 2 x, participant 2 y, participant 1 angle, and participant 2 angle in that order for each time step.</returns>
         internal static string[][] CalculateAngles(string[][] participantData1, string[][] participantData2, int xCol, int yCol, ref List<string> issues, string issueHeader)
         {
             // Get the shorter length between the two data arrays and initialize the results to that length.
@@ -93,13 +93,13 @@ namespace TimeSeriesDataScripts
             {
                 // Parse the coordinates of participant 1.
                 double participant1_x;
-                if (double.TryParse(participantData1[lineNum][xCol], out participant1_x))
+                if (double.TryParse(participantData1[lineNum][xCol], out participant1_x) == false)
                 {
                     issues.Add(issueHeader + "Error parsing x value for participant 1 on line " + (lineNum + 1) + " in column " + xCol);
                     continue;
                 }
                 double participant1_y;
-                if (double.TryParse(participantData1[lineNum][xCol], out participant1_y))
+                if (double.TryParse(participantData1[lineNum][yCol], out participant1_y) == false)
                 {
                     issues.Add(issueHeader + "Error parsing y value for participant 1 on line " + (lineNum + 1) + " in column " + yCol);
                     continue;
@@ -107,13 +107,13 @@ namespace TimeSeriesDataScripts
 
                 // Parse the coordinates of participant 2.
                 double participant2_x;
-                if (double.TryParse(participantData1[lineNum][xCol], out participant2_x))
+                if (double.TryParse(participantData2[lineNum][xCol], out participant2_x) == false)
                 {
                     issues.Add(issueHeader + "Error parsing x value for participant 2 on line " + (lineNum + 1) + " in column " + xCol);
                     continue;
                 }
                 double participant2_y;
-                if (double.TryParse(participantData1[lineNum][xCol], out participant2_y))
+                if (double.TryParse(participantData2[lineNum][yCol], out participant2_y) == false)
                 {
                     issues.Add(issueHeader + "Error parsing y value for participant 2 on line " + (lineNum + 1) + " in column " + yCol);
                     continue;
@@ -129,12 +129,17 @@ namespace TimeSeriesDataScripts
                 double length_p1_p2 = Math.Sqrt(Math.Pow(participant1_x - participant2_x, 2) + Math.Pow(participant1_y - participant2_y, 2));
 
                 // Use the law of cosines to calculate the angle with participant 1 and participant 2 as the vertex.
-                double angle_p1 = Math.Acos((Math.Pow(length_p1_p2, 2) + Math.Pow(length_p1_chart, 2) + Math.Pow(length_p2_chart, 2)) / (2 * length_p1_p2 * length_p1_chart));
-                double angle_p2 = Math.Acos((Math.Pow(length_p1_p2, 2) + Math.Pow(length_p2_chart, 2) + Math.Pow(length_p1_chart, 2)) / (2 * length_p1_p2 * length_p2_chart));
+                double angle_p1_radians = Math.Acos((Math.Pow(length_p1_p2, 2) + Math.Pow(length_p1_chart, 2) - Math.Pow(length_p2_chart, 2)) / (2 * length_p1_p2 * length_p1_chart));
+                double angle_p2_radians = Math.Acos((Math.Pow(length_p1_p2, 2) + Math.Pow(length_p2_chart, 2) - Math.Pow(length_p1_chart, 2)) / (2 * length_p1_p2 * length_p2_chart));
 
-                // Write the output values to the line.
-                result[lineNum] = new string[6]
+                // Convert the angles to degrees.
+                double angle_p1 = angle_p1_radians * 180 / Math.PI;
+                double angle_p2 = angle_p2_radians * 180 / Math.PI;
+
+                // Write the output values to the line, preserving the time stamp.
+                result[lineNum] = new string[7]
                 {
+                    participantData1[lineNum][0],
                     participant1_x.ToString(),
                     participant1_y.ToString(),
                     participant2_x.ToString(),

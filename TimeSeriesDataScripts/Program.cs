@@ -72,6 +72,9 @@ namespace TimeSeriesDataScripts
                 // For each trial...
                 for (int trialNum = 1; trialNum <= numTrials; trialNum++)
                 {
+                    // Intialize the two data structures to hold the device data.
+                    string[][][] participantData = new string[2][][];
+
                     // For each device...
                     for (int deviceNum = 0; deviceNum < 2; deviceNum++)
                     {
@@ -97,19 +100,48 @@ namespace TimeSeriesDataScripts
                         string issueHeader = "Smoothing Error Team " + teamNum + ", Trial " + trialNum + ", Device " + deviceNum + " - ";
 
                         // Smooth the data and add the issue set to the issues.
-                        string[][] smoothedData = DataTransformer.SmoothData(trialData, columnsToSmooth.ToArray(), smoothingWeight, ref smoothingIssues, issueHeader);
+                        participantData[deviceNum] = DataTransformer.SmoothData(trialData, columnsToSmooth.ToArray(), smoothingWeight, ref smoothingIssues, issueHeader);
                         issues.Add("Input " + fileName, smoothingIssues);
 
                         // Output the smoothed data.
                         Program.GenerateTrialsOutputs(
                             args[(int)Program.ArgsIndices.OutputFolder],
                             teamNum.ToString(),
-                            trialNum,
+                            trialNum.ToString(),
                             "Hololens",
                             deviceNum.ToString(),
-                            smoothedData
+                            participantData[deviceNum]
                             );
                     }
+
+                    // Skip angle calculations if either paticipants' data is missing.
+                    string angleIssueKey = "Participant Angles Team " + teamNum + " Trial " + trialNum;
+                    if (participantData[0] == null || participantData[1] == null)
+                    {
+                        issues.Add(angleIssueKey, new List<string>() { "Participant data missing, angle calculations skipped." });
+                        continue;
+                    }
+
+                    List<string> angleIssues = new List<string>();
+                    string trialIssueHeader = "Participant Angle Calculation Error Team " + teamNum + ", Trial " + trialNum + " - ";
+
+                    // Calculate the participant angles for the trial.
+                    string[][] participantAnglesData = DataTransformer.CalculateAngles(
+                        participantData[0],
+                        participantData[1],
+                        1,
+                        3,
+                        ref angleIssues,
+                        trialIssueHeader
+                        );
+                    issues.Add(angleIssueKey, angleIssues);
+
+                    // Output the participant angles data.
+                    Program.GenerateAnglesOutputs(
+                        args[(int)Program.ArgsIndices.OutputFolder],
+                        teamNum.ToString(),
+                        trialNum.ToString(),
+                        participantAnglesData);
                 }
             }
 
@@ -125,7 +157,7 @@ namespace TimeSeriesDataScripts
         /// <param name="modality"></param>
         /// <param name="deviceId"></param>
         /// <param name="trialsData"></param>
-        private static void GenerateTrialsOutputs(string outputFolderPath, string teamNumber, int trialNumber, string modality, string deviceId, string[][] trialsData)
+        private static void GenerateTrialsOutputs(string outputFolderPath, string teamNumber, string trialNumber, string modality, string deviceId, string[][] trialsData)
         {
             // Ensure the path ends in a slash before appending the file name.
             if (outputFolderPath[outputFolderPath.Length - 1] != '\\')
@@ -144,6 +176,50 @@ namespace TimeSeriesDataScripts
                 {
                     // For each line in the trial data...
                     foreach (string[] lineData in trialsData)
+                    {
+                        // Build a CSV file line, with values separated by commas.
+                        StringBuilder line = new StringBuilder();
+                        foreach (string value in lineData)
+                        {
+                            line.Append(value);
+                            line.Append(",");
+                        }
+
+                        // Remove the extra trailing comma, and then write the line to the file.
+                        string lineString = line.ToString();
+                        lineString = lineString.Remove(lineString.Length - 1);
+                        writer.WriteLine(lineString);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="outputFolderPath"></param>
+        /// <param name="teamNumber"></param>
+        /// <param name="modality"></param>
+        /// <param name="anglesData"></param>
+        private static void GenerateAnglesOutputs(string outputFolderPath, string teamNumber, string trialNumber, string[][] anglesData)
+        {
+            // Ensure the path ends in a slash before appending the file name.
+            if (outputFolderPath[outputFolderPath.Length - 1] != '\\')
+            {
+                outputFolderPath += "\\";
+            }
+
+            // Create the file name and append it to the output folder path.
+            string fileName = "Angles_Team" + teamNumber + "_Trial" + trialNumber +".csv";
+            string fullPath = outputFolderPath + fileName;
+
+            // Create the file.
+            using (FileStream stream = File.Create(fullPath))
+            {
+                using (StreamWriter writer = new StreamWriter(stream))
+                {
+                    // For each line in the trial data...
+                    foreach (string[] lineData in anglesData)
                     {
                         // Build a CSV file line, with values separated by commas.
                         StringBuilder line = new StringBuilder();
