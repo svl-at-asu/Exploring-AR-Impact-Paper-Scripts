@@ -23,7 +23,7 @@ var svg = d3.select(".root").append("svg")
     .attr("transform",
         "translate(" + margin.left + "," + margin.top + ")");
 
-const data = await d3.csv("data/test.csv");
+const data = await d3.csv("data/test2.csv");
 console.log(data);
 
 // Format the data (parsing the strings to their appropriate datatypes)
