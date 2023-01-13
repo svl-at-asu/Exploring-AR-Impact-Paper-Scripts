@@ -137,7 +137,7 @@ namespace TimeSeriesDataScripts
                 double angle_p2 = angle_p2_radians * 180 / Math.PI;
 
                 // Write the output values to the line, preserving the time stamp.
-                result[lineNum] = new string[7]
+                result[lineNum] = new string[8]
                 {
                     participantData1[lineNum][0],
                     participant1_x.ToString(),
@@ -145,11 +145,50 @@ namespace TimeSeriesDataScripts
                     participant2_x.ToString(),
                     participant2_y.ToString(),
                     angle_p1.ToString(),
-                    angle_p2.ToString()
+                    angle_p2.ToString(),
+                    length_p1_p2.ToString()
                 };
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Samples the given dataset at the given rate. Returns an empty dataset if the input dataset is empty.
+        /// </summary>
+        /// <param name="dataset">The dataset to sample.</param>
+        /// <param name="datasetRate">The rate of the given dataset.</param>
+        /// <param name="sampleRate">The rate to sample the given dataset.</param>
+        /// <returns>A subset of the given dataset, with samples taken at the given rate. Returns an empty dataset if the input dataset is empty.</returns>
+        internal static string[][] SampleAtRate(string[][] dataset, int datasetRate, int sampleRate)
+        {
+            // Return the original dataset if the length is zero.
+            if (dataset.Length == 0)
+            {
+                return dataset;
+            }
+
+            // Calculate the total seconds of the dataset.
+            double totalSeconds = dataset.Length / (double)datasetRate;
+
+            // Find the total number of samples to take based on the given rate.
+            double totalSamples = totalSeconds * sampleRate;
+            double sampleInterval = 1.0 / sampleRate;
+
+            // Initialize the new data structure.
+            List<string[]> result = new List<string[]>();
+
+            // For each sample interval within the total seconds...
+            for (double currentSampleTime = 0; currentSampleTime <= totalSeconds; currentSampleTime += sampleInterval)
+            {
+                // Find the sample time proportionally to the total number of samples.
+                int sampleIndex = (int)Math.Round((currentSampleTime / totalSeconds) * (dataset.Length - 1));
+
+                string[] sampledLine = dataset[sampleIndex];
+                result.Add(sampledLine);
+            }
+
+            return result.ToArray();
         }
     }
 }

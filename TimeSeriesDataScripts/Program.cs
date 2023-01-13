@@ -10,7 +10,7 @@ namespace TimeSeriesDataScripts
     internal class Program
     {
         /// <summary>
-        /// Args are expected in the following order: Number of teams, Trials per team, Columns to smooth, Smoothing weight, Input data folder, Output folder.
+        /// Args are expected in the following order: Number of teams, Trials per team, Columns to smooth, Smoothing weight, Sample rate, Dataset rate, Input data folder, Output folder.
         /// </summary>
         private enum ArgsIndices
         {
@@ -18,8 +18,10 @@ namespace TimeSeriesDataScripts
             TrialsPerTeam = 1,
             ColumnsToSmooth = 2,
             SmoothingWeight = 3,
-            InputDataFolder = 4,
-            OutputFolder = 5
+            SampleRate = 4,
+            DatasetRate = 5,
+            InputDataFolder = 6,
+            OutputFolder = 7
         }
 
         /// <summary>
@@ -64,6 +66,20 @@ namespace TimeSeriesDataScripts
             if (double.TryParse(args[(int)Program.ArgsIndices.SmoothingWeight], out smoothingWeight) == false)
             {
                 issues["Program Args"].Add("Error trying to parse program argument " + (int)Program.ArgsIndices.SmoothingWeight + ". Read: \"" + args[(int)Program.ArgsIndices.SmoothingWeight] + "\", expected a valid double.");
+            }
+
+            // Parse the sample and dataset rates.
+            bool skipSampling = false;
+            if (int.TryParse(args[(int)Program.ArgsIndices.SampleRate], out int sampleRate) == false)
+            {
+                issues["Program Args"].Add("Error trying to parse program argument " + (int)Program.ArgsIndices.SampleRate + ". Read: \"" + args[(int)Program.ArgsIndices.SampleRate] + "\", expected a valid integer.");
+                skipSampling = true;
+            }
+
+            if (int.TryParse(args[(int)Program.ArgsIndices.DatasetRate], out int datasetRate) == false)
+            {
+                issues["Program Args"].Add("Error trying to parse program argument " + (int)Program.ArgsIndices.DatasetRate + ". Read: \"" + args[(int)Program.ArgsIndices.DatasetRate] + "\", expected a valid integer.");
+                skipSampling = true;
             }
 
             // For each team...
@@ -136,12 +152,19 @@ namespace TimeSeriesDataScripts
                         );
                     issues.Add(angleIssueKey, angleIssues);
 
+                    // Sample the calculated angles, or just pass along the existing data if sampling is to be skipped.
+                    string[][] sampledAnglesData = skipSampling ? participantAnglesData : DataTransformer.SampleAtRate(
+                        participantAnglesData,
+                        datasetRate,
+                        sampleRate
+                        );
+
                     // Output the participant angles data.
                     Program.GenerateAnglesOutputs(
                         args[(int)Program.ArgsIndices.OutputFolder],
                         teamNum.ToString(),
                         trialNum.ToString(),
-                        participantAnglesData);
+                        sampledAnglesData);
                 }
             }
 
@@ -218,6 +241,9 @@ namespace TimeSeriesDataScripts
             {
                 using (StreamWriter writer = new StreamWriter(stream))
                 {
+                    // Write the header line.
+                    writer.WriteLine("time,p1_x,p1_y,p2_x,p2_y,p1_angle,p2_angle,distance");
+
                     // For each line in the trial data...
                     foreach (string[] lineData in anglesData)
                     {
