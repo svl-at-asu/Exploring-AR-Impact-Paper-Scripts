@@ -17,9 +17,10 @@ namespace ViewportDataScripts
             NumberOfTeams = 0,
             InputDataFolder = 1,
             DeviceID = 2,
-            TrialData = 3,
-            VideoTimesData = 4,
-            OutputFolder = 5
+            LineLength = 3,
+            TrialData = 4,
+            VideoTimesData = 5,
+            OutputFolder = 6
         }
 
         /// <summary>
@@ -74,6 +75,17 @@ namespace ViewportDataScripts
                 });
             }
 
+            // Parse the line length.
+            int lineLength = 0;
+            if (int.TryParse(args[(int)Program.ArgsIndices.LineLength], out lineLength) == false)
+            {
+                // An error occured while trying to parse the number of teams. Add an issue to the list.
+                issues.Add("Program Args", new List<string>()
+                {
+                    "Program Args error - program args at index " + (int)Program.ArgsIndices.LineLength + " is not in the expected format."
+                });
+            }
+
             // For each team...
             for (int index = 1; index < numTeams; index++)
             {
@@ -102,6 +114,7 @@ namespace ViewportDataScripts
                     sessionData,
                     trialTimes[0].ToArray(),
                     trialTimes[1].ToArray(),
+                    lineLength,
                     ref clippingIssues,
                     issueHeader
                     );

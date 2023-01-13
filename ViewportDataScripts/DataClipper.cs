@@ -17,10 +17,11 @@ namespace ViewportDataScripts
         /// <param name="sessionData">The full session viewport tracking data in a 2D string array indexed by row then column.</param>
         /// <param name="clippingStartTimes">A list of the trial start times in the session.</param>
         /// <param name="clippingEndTimes">A list of the trial end times in the session.</param>
+        /// <param name="lineLength">The length a valid line should be. Lines of a different length are not copied.</param>
         /// <param name="issues">A list of issues found in the current data.</param>
         /// <param name="issueHeader">The standard header to add to the beginning of each new issue appended to the issues list.</param>
         /// <returns>The trial viewport tracking data in a 3D string array, indexed by trial number then row then column.</returns>
-        internal static List<string[]>[] ExtractTrials(string[][] sessionData, string[] clippingStartTimes, string[] clippingEndTimes, ref List<string> issues, string issueHeader)
+        internal static List<string[]>[] ExtractTrials(string[][] sessionData, string[] clippingStartTimes, string[] clippingEndTimes, int lineLength, ref List<string> issues, string issueHeader)
         {
             // Initialize the return data structure.
             List<string[]>[] trialData = new List<string[]>[clippingStartTimes.Length];
@@ -83,7 +84,7 @@ namespace ViewportDataScripts
                     if (DateTime.TryParse(sessionData[lineIndex][0], out lineTimeStamp) == false)
                     {
                         // An error occured while attempting to parse the time stamp. Add an entry to the error log and continue to the next line.
-                        issues.Add(issueHeader + "Data Time Parse Error - Could not parse time stamp of line " + lineIndex + ". Read: \"" + sessionData[lineIndex][0] + "\", expected a valid datetime. Looking for starting line for trial " + clipIndex + ".");
+                        issues.Add(issueHeader + "Data Time Parse Error - Could not parse time stamp of line " + lineIndex + ". Read: \"" + sessionData[lineIndex][0] + "\", expected a valid datetime. Looking for starting line for trial " + (clipIndex + 1) + ".");
                     }
 
                 }
@@ -93,8 +94,11 @@ namespace ViewportDataScripts
                 // Copy over the data until the first time stamp passed the trial end time.
                 while (lineTimeStamp <= endTime)
                 {
-                    // Copy over the current line.
-                    trialData[clipIndex].Add(sessionData[lineIndex]);
+                    // Copy over the current line if it is the appropriate length.
+                    if (sessionData[lineIndex].Length == lineLength)
+                    {
+                        trialData[clipIndex].Add(sessionData[lineIndex]);
+                    }
 
                     // Move on to the next line.
                     lineIndex++;

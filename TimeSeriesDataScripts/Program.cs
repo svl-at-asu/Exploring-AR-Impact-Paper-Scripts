@@ -10,14 +10,16 @@ namespace TimeSeriesDataScripts
     internal class Program
     {
         /// <summary>
-        /// Args are expected in the following order: Number of teams, Trials per team, Input data folder, Output folder.
+        /// Args are expected in the following order: Number of teams, Trials per team, Columns to smooth, Smoothing weight, Input data folder, Output folder.
         /// </summary>
         private enum ArgsIndices
         {
             NumberOfTeams = 0,
             TrialsPerTeam = 1,
-            InputDataFolder = 2,
-            OutputFolder = 3
+            ColumnsToSmooth = 2,
+            SmoothingWeight = 3,
+            InputDataFolder = 4,
+            OutputFolder = 5
         }
 
         /// <summary>
@@ -43,8 +45,26 @@ namespace TimeSeriesDataScripts
             }
 
             // Initialize the issues set.
-            Dictionary<string, List<string>> issues = new Dictionary<string, List<string>>();
-            issues.Add("Input", new List<string>());
+            Dictionary<string, List<string>> issues = new Dictionary<string, List<string>>()
+            {
+                { "Program Args", new List<string>() },
+                { "Input", new List<string>() }
+            };
+
+            // Parse the columns to smooth.
+            string[] columnToSmoothStrings = args[(int)Program.ArgsIndices.ColumnsToSmooth].Split(',');
+            List<int> columnsToSmooth = new List<int>();
+            foreach (string columnString in columnToSmoothStrings)
+            {
+                columnsToSmooth.Add(int.Parse(columnString));
+            }
+
+            // Parse the smoothing weight.
+            double smoothingWeight;
+            if (double.TryParse(args[(int)Program.ArgsIndices.SmoothingWeight], out smoothingWeight) == false)
+            {
+                issues["Program Args"].Add("Error trying to parse program argument " + (int)Program.ArgsIndices.SmoothingWeight + ". Read: \"" + args[(int)Program.ArgsIndices.SmoothingWeight] + "\", expected a valid double.");
+            }
 
             // For each team...
             for (int teamNum = 1; teamNum <= numTeams; teamNum++)
@@ -57,25 +77,89 @@ namespace TimeSeriesDataScripts
                     {
                         // Assemble the file name to read.
                         string fileName = "Team" + teamNum + "_Trial" + trialNum + "_Hololens_Device" + deviceNum + ".csv";
-                        filePath += fileName;
+                        string trialFilePath = filePath + fileName;
 
                         // Read the trial table data file.
                         string[][] trialData = null;
                         try
                         {
-                            trialData = DataReader.ReadCsvData(filePath);
+                            trialData = DataReader.ReadCsvData(trialFilePath);
                         }
                         catch (Exception ex)
                         {
                             // An error occured while trying to read the file data. Add an issue to the list.
                             issues["Input"].Add("Error reading input file \"" + filePath + "\": " + ex.Message);
+                            continue;
                         }
+
+                        // Initialize the smoothing issues set and issue header.
+                        List<string> smoothingIssues = new List<string>();
+                        string issueHeader = "Smoothing Error Team " + teamNum + ", Trial " + trialNum + ", Device " + deviceNum + " - ";
+
+                        // Smooth the data and add the issue set to the issues.
+                        string[][] smoothedData = DataTransformer.SmoothData(trialData, columnsToSmooth.ToArray(), smoothingWeight, ref smoothingIssues, issueHeader);
+                        issues.Add("Input " + fileName, smoothingIssues);
+
+                        // Output the smoothed data.
+                        Program.GenerateTrialsOutputs(
+                            args[(int)Program.ArgsIndices.OutputFolder],
+                            teamNum.ToString(),
+                            trialNum,
+                            "Hololens",
+                            deviceNum.ToString(),
+                            smoothedData
+                            );
                     }
                 }
             }
 
             // Generate the issues log.
             Program.GenerateOutputLog(args[(int)Program.ArgsIndices.OutputFolder], issues);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="outputFolderPath"></param>
+        /// <param name="teamNumber"></param>
+        /// <param name="modality"></param>
+        /// <param name="deviceId"></param>
+        /// <param name="trialsData"></param>
+        private static void GenerateTrialsOutputs(string outputFolderPath, string teamNumber, int trialNumber, string modality, string deviceId, string[][] trialsData)
+        {
+            // Ensure the path ends in a slash before appending the file name.
+            if (outputFolderPath[outputFolderPath.Length - 1] != '\\')
+            {
+                outputFolderPath += "\\";
+            }
+
+            // Create the file name and append it to the output folder path.
+            string fileName = "Team" + teamNumber + "_Trial" + trialNumber + "_" + modality + "_Device" + deviceId + "_Smoothed.csv";
+            string fullPath = outputFolderPath + fileName;
+
+            // Create the file.
+            using (FileStream stream = File.Create(fullPath))
+            {
+                using (StreamWriter writer = new StreamWriter(stream))
+                {
+                    // For each line in the trial data...
+                    foreach (string[] lineData in trialsData)
+                    {
+                        // Build a CSV file line, with values separated by commas.
+                        StringBuilder line = new StringBuilder();
+                        foreach (string value in lineData)
+                        {
+                            line.Append(value);
+                            line.Append(",");
+                        }
+
+                        // Remove the extra trailing comma, and then write the line to the file.
+                        string lineString = line.ToString();
+                        lineString = lineString.Remove(lineString.Length - 1);
+                        writer.WriteLine(lineString);
+                    }
+                }
+            }
         }
 
         /// <summary>
