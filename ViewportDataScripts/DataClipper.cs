@@ -20,10 +20,14 @@ namespace ViewportDataScripts
         /// <param name="issues">A list of issues found in the current data.</param>
         /// <param name="issueHeader">The standard header to add to the beginning of each new issue appended to the issues list.</param>
         /// <returns>The trial viewport tracking data in a 3D string array, indexed by trial number then row then column.</returns>
-        internal static string[][][] ExtractTrials(string[][] sessionData, string[] clippingStartTimes, string[] clippingEndTimes, ref List<string> issues, string issueHeader)
+        internal static List<string[]>[] ExtractTrials(string[][] sessionData, string[] clippingStartTimes, string[] clippingEndTimes, ref List<string> issues, string issueHeader)
         {
             // Initialize the return data structure.
-            string[][][] trialData = new string[clippingStartTimes.Length][][];
+            List<string[]>[] trialData = new List<string[]>[clippingStartTimes.Length];
+            for (int i = 0; i < clippingStartTimes.Length; i++)
+            {
+                trialData[i] = new List<string[]>();
+            }
 
             // Initialize the line pointer to the start of the file.
             int lineIndex = 0;
@@ -59,7 +63,7 @@ namespace ViewportDataScripts
                 if (DateTime.TryParse(sessionData[lineIndex][0], out lineTimeStamp) == false)
                 {
                     // An error occured while attempting to parse the time stamp. Add an entry to the error log and continue to the next line.
-                    issues.Add(issueHeader + "Data Time Parse Error - Could not parse time stamp of line " + lineIndex + ". Read: \"" + clippingEndTimes[clipIndex] + "\", expected a valid datetime.");
+                    issues.Add(issueHeader + "Data Time Parse Error - Could not parse time stamp of line " + lineIndex + ". Read: \"" + sessionData[lineIndex][0] + "\", expected a valid datetime.");
                 }
 
                 // Advance the line pointer until the first time stamp that is at or passed the trial start time.
@@ -71,25 +75,26 @@ namespace ViewportDataScripts
                     // Ensure the line number is within the session data's length.
                     if (lineIndex >= sessionData.Length)
                     {
-                        issues.Add(issueHeader + "Session Data Format Error - The end of the session data has been reached, but no time has been found passed the start time for trial " + (clipIndex + 1) + "! Start time read: " + startTime.ToLongDateString());
-                        return null;
+                        issues.Add(issueHeader + "Session Data Format Error - The end of the session data has been reached, but no time has been found passed the start time for trial " + (clipIndex + 1) + "! Start time read: " + startTime.ToString());
+                        return trialData;
                     }
 
                     // Parse the line's time stamp.
                     if (DateTime.TryParse(sessionData[lineIndex][0], out lineTimeStamp) == false)
                     {
                         // An error occured while attempting to parse the time stamp. Add an entry to the error log and continue to the next line.
-                        issues.Add(issueHeader + "Data Time Parse Error - Could not parse time stamp of line " + lineIndex + ". Read: \"" + clippingEndTimes[clipIndex] + "\", expected a valid datetime.");
+                        issues.Add(issueHeader + "Data Time Parse Error - Could not parse time stamp of line " + lineIndex + ". Read: \"" + sessionData[lineIndex][0] + "\", expected a valid datetime. Looking for starting line for trial " + clipIndex + ".");
                     }
 
                 }
                 // lineIndex is now at the first line equal to or passed the trial start tine.
+                issues.Add(issueHeader + " - Started clipping for trial " + (clipIndex + 1) + " at input line " + (lineIndex + 1) + ".");
 
                 // Copy over the data until the first time stamp passed the trial end time.
                 while (lineTimeStamp <= endTime)
                 {
                     // Copy over the current line.
-                    trialData[clipIndex].Append(sessionData[lineIndex]);
+                    trialData[clipIndex].Add(sessionData[lineIndex]);
 
                     // Move on to the next line.
                     lineIndex++;
@@ -97,18 +102,20 @@ namespace ViewportDataScripts
                     // Ensure the line number is within the session data's length.
                     if (lineIndex >= sessionData.Length)
                     {
-                        issues.Add(issueHeader + "Session Data Format Error - The end of the session data has been reached, but no time has been found passed the end time for trial " + (clipIndex + 1) + "! End time read: " + startTime.ToLongDateString());
-                        return null;
+                        issues.Add(issueHeader + "Session Data Format Error - The end of the session data (line " + lineIndex + ") has been reached, but no time has been found passed the end time for trial " + (clipIndex + 1) + "! End time read: " + startTime.ToString());
+                        return trialData;
                     }
 
                     // Parse the line's time stamp.
                     if (DateTime.TryParse(sessionData[lineIndex][0], out lineTimeStamp) == false)
                     {
                         // An error occured while attempting to parse the time stamp. Add an entry to the error log and continue to the next line.
-                        issues.Add(issueHeader + "Data Time Parse Error - Could not parse time stamp of line " + lineIndex + ". Read: \"" + clippingEndTimes[clipIndex] + "\", expected a valid datetime.");
+                        issues.Add(issueHeader + "Data Time Parse Error - Could not parse time stamp of line " + lineIndex + ". Read: \"" + sessionData[lineIndex][0] + "\", expected a valid datetime. Copying data line for trial " + clipIndex + ".");
                     }
                 }
                 // lineIndex is now at the first line passed the trial end time.
+                issues.Add(issueHeader + " - Finished clipping for trial " + (clipIndex + 1) + " at input line " + lineIndex + ".");
+
                 // Move on to the next trial.
             }
 
