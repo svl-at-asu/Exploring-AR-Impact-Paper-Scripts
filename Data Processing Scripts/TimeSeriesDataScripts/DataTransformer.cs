@@ -119,9 +119,9 @@ namespace TimeSeriesDataScripts
                     continue;
                 }
 
-                // The chart is centered at the origin.
-                double chart_x = 0;
-                double chart_y = 0;
+                // The chart is size 1 x 1 in the two horizontal dimensions, and is in the positive quadrant with the corner on the origin.
+                double chart_x = 0.5;
+                double chart_y = 2.5;
 
                 // Find the length of each side of the triangle formed by the two participants and the chart.
                 double length_p1_chart = Math.Sqrt(Math.Pow(participant1_x - chart_x, 2) + Math.Pow(participant1_y - chart_y, 2));

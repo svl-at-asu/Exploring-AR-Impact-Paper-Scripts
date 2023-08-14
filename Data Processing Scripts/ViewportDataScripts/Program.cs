@@ -87,7 +87,7 @@ namespace ViewportDataScripts
             }
 
             // For each team...
-            for (int index = 1; index < numTeams; index++)
+            for (int index = 1; index <= numTeams; index++)
             {
                 // Assemble the file path.
                 string filePath = args[(int)Program.ArgsIndices.InputDataFolder];
