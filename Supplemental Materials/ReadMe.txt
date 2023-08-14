@@ -4,7 +4,8 @@ VRST 2023 Submission
 
 These supplemental materials are provided in the interest of verification and increasing reproducability of the study. A description of the included files follows.
 
-Data processing scripts used with this data can be publicly found on GitHub at < URL anonymized for review >
+Data processing scripts used with this data can be publicly found on GitHub at https://github.com/svl-at-asu/Exploring-AR-Impact-Paper-Scripts.
+
 
 
 ===================================================================================
@@ -31,6 +32,7 @@ distance	The distance between the two participants in meters
 *the visualization is a 1 meter cube, centered at (0.5, 2.5).
 
 
+
 ===================================================================================
 
 DriverDesktopModality.csv
@@ -48,6 +50,7 @@ Video		The video file the trial is recorded in
 Task		The task participants performed in the trial
 Trial		The trial number
 Driver		The participant who controlled the mouse. { 0 = Both, 1 = Participant 1, 2 = Participant 2 }
+
 
 
 ===================================================================================
@@ -79,6 +82,51 @@ Time Same			The total time the team spent in the "Same Space" arrangement during
 Gestures Rate Same		The rate the team gestured while in the "Same Space" arrangement in gestures per second
 Looks Rate Same			The rate the team looked while in the "Same Space" arrangement in looks per second
 Utterances Rate Same		The rate the team uttered while in the "Same Space" arrangement in utterances per second
+
+
+
+===================================================================================
+
+PostStudySurveyResponses.csv
+
+This file contains the participant responses to the post-study survey, including the NASA TLX and free-response questions. Participant data has been anonymized.
+
+This csv file has the following columns (NOTE - columns have two rows of header - the second row contains the text of the survey questions):
+
+Participant ID	| TLX Mental Demand Computer	| TLX Mental Demand HoloLens	| TLX Physical Demand Computer		| TLX Physical Demand HoloLens	| TLX Temporal Demand Computer	| TLX Temporal Demand HoloLens	| TLX Performance Computer	| TLX Performance HoloLens	| TLX Effort Computer	| TLX Effort HoloLens	| TLX Frustration Computer	| TLX Frustration HoloLens	| Device Preference	| Communication Ease
+
+Participant ID			The anonymized ID assigned to the participant.
+TLX Mental Demand Computer	The repsonse on a scale of 1 to 7 for mental demand in the desktop modality.
+TLX Mental Demand HoloLens	The repsonse on a scale of 1 to 7 for mental demand in the HoloLens modality.
+TLX Physical Demand Computer	The repsonse on a scale of 1 to 7 for physical demand in the desktop modality.
+TLX Physical Demand HoloLens	The repsonse on a scale of 1 to 7 for physical demand in the HoloLens modality.
+TLX Temporal Demand Computer	The repsonse on a scale of 1 to 7 for temporal demand in the desktop modality.
+TLX Temporal Demand HoloLens	The repsonse on a scale of 1 to 7 for temporal demand in the HoloLens modality.
+TLX Performance Computer	The repsonse on a scale of 1 to 7 for performance in the desktop modality.
+TLX Performance HoloLens	The repsonse on a scale of 1 to 7 for performance in the HoloLens modality.
+TLX Effort Computer		The repsonse on a scale of 1 to 7 for effort in the desktop modality.
+TLX Effort HoloLens		The repsonse on a scale of 1 to 7 for effort in the HoloLens modality.
+TLX Frustration Computer	The repsonse on a scale of 1 to 7 for frustration in the desktop modality.
+TLX Frustration HoloLens	The repsonse on a scale of 1 to 7 for frustration in the HoloLens modality.
+Device Preference		The free-response to device (modality) preference.
+Communication Ease		The free-response to ease of communication between modalities.
+
+
+
+===================================================================================
+
+Qualitative Coding Instructions.pdf
+
+This file contains the instructions given to the video coders to qualitatively code the study videos. The "VideoEncodingEventTable.csv" file was generated as the final output of this coding process.
+
+
+
+===================================================================================
+
+Qualitative Coding Procedure.pdf
+
+This file contains the procedure used to qualitatively code the study videos. The "VideoEncodingEventTable.csv" file was generated as the final output of this coding process.
+
 
 
 
@@ -133,7 +181,7 @@ Either person speaking to instructor	Count of utterances where either participan
 
 VideoEncodingEventTable.csv
 
-This file contains the data on utterance counts broken down based on who was speaking to whom. This data was generated during the video encoding process.
+This file contains the data on all qualitatively coded participant events: Utterances, Gestures, and Looks. This data was generated during the video encoding process.
 
 This csv file has the following columns:
 
